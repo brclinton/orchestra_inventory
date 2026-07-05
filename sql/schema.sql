@@ -3,15 +3,6 @@
 -- PostgreSQL Schema v1
 -- =========================
 
--- Function Set Updated At -- creates or updates timestamps for logging events
-
-create or replace function set_updated_at()
-    returns trigger as $$
-    begin
-        new.updated_at := now();
-        return new;
-    end;
-$$ language plpgsql;
 
 -- Table: Students
 
@@ -26,20 +17,12 @@ create table students (
     graduation_year smallint
 );
 
-create index idx_students_last_name
-    on students(last_name);
-create index idx_students_grade_level
-    on students(grade_level);
-
 
 -- Table: Instrument Condition Statuses
 
 create table condition_statuses (
     status_name varchar(50) primary key
 );
-
-insert into condition_statuses  
-    values ('good'), ('fair'), ('poor'), ('see_notes'), ('needs_repair'), ('decommissioned'); -- creating an expandable list of condition statuses to check against
 
 
 -- Table: Instruments
@@ -71,16 +54,6 @@ create table loans (
         check (return_date is null or return_date >= checkout_date)
 );
 
-create trigger trg_loans_updated_at
-    before update on loans
-    for each row execute function set_updated_at();  -- trigger to call set_updated_at function
-
-create index idx_loans_instrument_id on loans (instrument_id);
-create index idx_loans_student_id on loans (student_id);
-create unique index idx_one_active_loan
-    on loans (instrument_id)
-    where return_date is null;
-
 
 -- Table: Repairs
 
@@ -96,26 +69,6 @@ create table repairs (
     status varchar(20) default 'pending'
         check (status in ('pending', 'in_progress', 'completed', 'cancelled' ))
 );
-
-create trigger trg_repairs_updated_at   -- trigger to call set_updated_at function
-    before update on repairs
-    for each row execute function set_updated_at(); 
-create trigger trg_repairs_sync_condition  -- calls sync_instrument_condition function to update instruments.status
-    before update on repairs
-    for each row
-    execute function sync_instrument_condition();
-create or replace function sync_instrument_condition() -- updates instruments.condition_status to 'needs_repair' when entered into repairs table
-    returns trigger as $$
-    begin
-        update instruments
-        set condition_status = 'needs _repair'
-        where instrument_id = new.instrument_id;
-    end if;
-    return new;
-end;
-$$ language plpgsql;
-
-create index idx_repairs_instrument_id on repairs(instrument_id);
 
 
 -- Table: Inventory Logs -- contains dynamic inventory data as logging events are created.
@@ -143,12 +96,6 @@ create table inventory_checks (
     decommission_reason text,
     unique (instrument_id, check_date)
 );
-
-create index idx_inventory_checks_instrument_id on inventory_checks(instrument_id);
-
-create trigger trg_inventory_checks_updated_at
-before update on inventory_checks
-for each row execute function set_updated_at();  -- trigger to call set_updated_at function
 
 
 
