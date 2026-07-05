@@ -21,7 +21,6 @@
 -- 2.  OVERRIDE DOUBLE CHECK
 
 do $$
-declare
 begin
     if current_setting('orchestra.allow_drop', true) is distinct from 'true' then
         raise exception
