@@ -8,7 +8,9 @@
 \echo 'Building Orchestra Inventory Database...'
 
 \echo 'Creating Tables...'
-\i 02_tables.sql  --  defines core schema
+
+--  defines core schema
+\i 02_tables.sql
 
 \echo 'Creating Functions...'
 \i 03_functions.sql
