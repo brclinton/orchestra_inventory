@@ -1,6 +1,6 @@
 # Orchestra Inventory Database
 
-This project is a relational database system designed to manage and track a school orchestra and music program’s 
+This project is a work-in-progress relational database system designed to manage and track a school orchestra and music program’s 
 physical inventory, including instruments, accessories, repairs, and lending history.
 
 ---
